@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+import sys
+from pprint import pprint
+from vyper import v
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Getting Policies on API host %s..." % (v.get("api_host")))
+try:
+    policies = policy_api.get_policies()
+    if args.verbose:
+        pprint(policies)
+except ApiException as e:
+    print("Exception when calling PolicyApi->get_policies: %s" % e)
+    sys.exit();
+
+for policy in policies:
+    print("  %s - %s" % (policy['Name'], policy['Description']))
+

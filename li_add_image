@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+from vyper import v
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name for image", required=True)
+parser.add_argument("--description", help="Description for image")
+parser.add_argument("--registry", help="Name of registry image is stored in", required=True)
+parser.add_argument("--config", help="Name of configuration to apply to image", required=True)
+parser.add_argument("--policy", help="Name of security policy to apply to image", required=True)
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+registry_api = swagger_client.RegistryApi()
+if args.verbose:
+    print("Looking up registry %s on API host %s..." % (args.registry, v.get("api_host")))
+try:
+    registry = registry_api.get_registry_by_name(args.registry)
+except ApiException as e:
+    print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
+    sys.exit();
+
+config_api = swagger_client.ConfigApi()
+if args.verbose:
+    print("Looking up config %s on API host %s..." % (args.config, v.get("api_host")))
+try:
+    config = config_api.get_registry_by_name(args.config) ******
+except ApiException as e:
+    print("Exception when calling ConfigApi->get_config_by_name: %s\n" % e)
+    sys.exit();
+
+policy_api = swagger_client.PolicyApi()
+if args.verbose:
+    print("Looking up policy %s on API host %s..." % (args.policy, v.get("api_host")))
+try:
+    policy = policy_api.get_policy_by_name(args.policy)
+except ApiException as e:
+    print("Exception when calling PolicyApi->get_policy_by_name: %s\n" % e)
+    sys.exit();
+
+# Image
+image_api = swagger_client.ImageApi()
+image_api.api_client.host = v.get("api_host")
+image = swagger_client.Image()
+image.name = args.name
+image.description = args.description
+image.registry = registry.id
+image.config = config.id
+image.policy = policy.id
+image.type = args.type
+
+# Create new Image definition
+if args.verbose:
+    print("Creating Image %s on API host %s..." % (args.name, v.get("api_host")))
+try:
+    api_response = image_api.add_image(image=image)
+    image.id = api_response.id
+except ApiException as e:
+    print("Exception when calling ImageApi->add_image: %s\n" % e)
+    sys.exit();
+
+if args.verbose:
+    print("Image created, ID " + str(image.id))

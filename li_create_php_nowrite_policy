@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name for policy")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+policy = swagger_client.Policy()
+if args.name:
+    policy.name = args.name
+else:
+    policy.name = "PHP No write"
+policy.description = "Blocks PHP apps from writing under /var/www/html"
+policy.default_file_action = "allow"
+policy.default_network_action = "allow"
+policy.default_program_action = "allow"
+policy.schema_version = "v1.0"
+policy.suspend = False
+policy.rules = []
+php_rule = swagger_client.PolicyRule()
+php_rule.name = "Don't write to web site"
+php_rule.rule_type = "file"
+php_rule.program = "/usr/sbin/httpd"
+php_rule.file = "/var/www/html/*"
+php_rule.action = "deny"
+policy.rules.append(php_rule)
+
+# Create new Policy definition
+if args.verbose:
+    print("Creating Policy %s on API host %s..." % (args.name, v.get("api_host")))
+try:
+    api_response = policy_api.add_policy(policy=policy)
+    policy.id = api_response.id
+    if args.verbose:
+        pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PolicyApi->add_policy: %s\n" % e)
+    sys.exit();
+
+if args.verbose:
+    print("Policy created, ID " + str(policy.id))
+
+

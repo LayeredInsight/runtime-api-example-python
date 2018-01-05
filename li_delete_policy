@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+import sys
+from pprint import pprint
+from vyper import v
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name for policy", required=True)
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+
+# Get policy by name
+if args.verbose:
+    print("Getting Policy by name \"%s\" on API host %s..." % (args.name, v.get("api_host")))
+try:
+    policy = policy_api.get_policy_by_name(args.name)
+    if args.verbose:
+        pprint(policy)
+except ApiException as e:
+    print("Exception when calling PolicyApi->get_policy_by_name: %s" % e)
+    sys.exit();
+
+# Delete policy by ID
+if args.verbose:
+    print("Deleting Policy by ID %s on API host %s..." % (policy.id, v.get("api_host")))
+try:
+    api_response = policy_api.delete_policy(policy.id)
+    if args.verbose:
+        pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PolicyApi->delete_policy: %s" % e)
+    sys.exit();
+
+if args.verbose:
+    print("Policy deleted, ID " + str(policy.id))

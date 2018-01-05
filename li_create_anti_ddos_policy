@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name for policy")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+policy = swagger_client.Policy()
+if args.name:
+    policy.name = args.name
+else:
+    policy.name = "Anti-recon and dos protection"
+policy.description = "Detects port scans, limits ssh DOS attack "
+policy.default_file_action = "allow"
+policy.default_network_action = "allow"
+policy.default_program_action = "allow"
+policy.schema_version = "v1.0"
+policy.suspend = False
+policy_limits = swagger_client.Limit()
+policy_limits.max_num_proc = 1500
+policy_limits.max_proc_life = 750
+syscall_limit = swagger_client.SyscallLimit()
+syscall_limit.syscall_name = "sys_read"
+syscall_limit.rate_per_sec = 10
+policy_limits.syscalls = []
+policy_limits.syscalls.append(syscall_limit)
+process_limit = swagger_client.ProcessLimit()
+process_limit.process_name = "sshd"
+process_limit.rate_per_sec = 20
+policy_limits.process_limit = []
+policy_limits.process_limit.append(process_limit)
+
+# Create new Policy definition
+if args.verbose:
+    print("Creating Policy %s on API host %s..." % (args.name, v.get("api_host")))
+try:
+    api_response = policy_api.add_policy(policy=policy)
+    policy.id = api_response.id
+    if args.verbose:
+        pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PolicyApi->add_policy: %s\n" % e)
+    sys.exit();
+
+if args.verbose:
+    print("Policy created, ID " + str(policy.id))
+
+

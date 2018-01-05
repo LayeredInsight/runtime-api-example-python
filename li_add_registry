@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+from vyper import v
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name for registry", required=True)
+parser.add_argument("--url", help="URL of registry to add", required=True)
+parser.add_argument("--type", help="Type of registry to add", choices=["dtr"], default="dtr")
+parser.add_argument("--username", help="Username to authenticate private registry")
+parser.add_argument("--password", help="Password to authenticate private registry")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+# Registry
+registry_api = swagger_client.RegistryApi()
+registry_api.api_client.host = v.get("api_host")
+registry = swagger_client.Registry()
+registry.name = args.name
+registry.url = args.url
+registry.type = args.type
+registry.username = args.username
+registry.password = args.password
+
+# Create new Registry definition
+if args.verbose:
+    print("Creating Registry %s on API host %s..." % (args.url, v.get("api_host")))
+try:
+    api_response = registry_api.add_registry(registry=registry)
+    registry.id = api_response.id
+    #pprint(api_response)
+except ApiException as e:
+    print("Exception when calling RegistryApi->add_registry: %s\n" % e)
+    sys.exit();
+
+if args.verbose:
+    print("Registry created, ID " + str(registry.id))

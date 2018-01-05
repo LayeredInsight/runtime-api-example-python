@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+from vyper import v
+import vyper
+from li_utils.envtools import *
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--policy-name", help="Name of policy to add rule to", required=True)
+parser.add_argument("--description", help="Description for rule")
+parser.add_argument("--default-file-action", help="Default action for file rules", choices=["allow","deny"], default="allow")
+parser.add_argument("--default-network-action", help="Default action for network rules", choices=["allow","deny"], default="allow")
+parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow","deny"], default="allow")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+try:
+    policy = policy_api.get_policy_by_name(args.policy_name)
+except ApiException as e:
+    print("Unable to load policy named %s:%s\n" % (args.policyname, e))
+    sys.exit();
+
+ssh_rule = swagger_client.PolicyRule()
+ssh_rule.name = "Stop sshd bind"
+ssh_rule.rule_type = "listener"
+ssh_rule.program = "/usr/sbin/sshd"
+ssh_rule.listening_port = 22
+ssh_rule.action = "deny"
+policy.rules.append(ssh_rule)
+
+# Create new Policy definition
+if args.verbose:
+    print("Creating Policy %s on API host %s..." % (args.policy_name, v.get("api_host")))
+
+try:
+    api_response = policy_api.update_policy(policy.id, policy=policy)
+    if args.verbose:
+        pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PolicyApi->update_policy: %s\n" % e)
+    sys.exit();
+
+if args.verbose:
+    print("Policy updated, ID " + str(policy.id))
