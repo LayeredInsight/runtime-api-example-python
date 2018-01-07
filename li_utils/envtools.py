@@ -3,13 +3,8 @@
 # Proprietary and confidential
 
 from __future__ import print_function
-import argparse
-import time
-import swagger_client
-from swagger_client.rest import ApiException
-from pprint import pprint
+import sys
 from vyper import v
-import vyper
 
 # Config setup
 def env_setup():
@@ -18,5 +13,4 @@ def env_setup():
 
     if not v.is_set("api_key") or not v.is_set("api_host"):
         print("LI_API_KEY or LI_API_HOST environment variables not found.")
-        sys.exit();
-
+        sys.exit()

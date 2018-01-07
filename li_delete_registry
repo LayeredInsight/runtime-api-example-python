@@ -18,34 +18,34 @@ env_setup()
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--name", help="Name for policy", required=True)
+parser.add_argument("--name", help="Name for registry", required=True)
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-policy_api = swagger_client.PolicyApi()
-policy_api.api_client.host = v.get("api_host")
+registry_api = swagger_client.RegistryApi()
+registry_api.api_client.host = v.get("api_host")
 
-# Get policy by name
+# Get registry by name
 if args.verbose:
-    print("Getting Policy by name \"%s\" on API host %s..." % (args.name, v.get("api_host")))
+    print("Getting Registry by name \"%s\" on API host %s..." % (args.name, v.get("api_host")))
 try:
-    policy = policy_api.get_policy_by_name(args.name)
+    registry = registry_api.get_registry_by_name(args.name)
     if args.verbose:
-        pprint(policy)
+        pprint(registry)
 except ApiException as e:
-    print("Exception when calling PolicyApi->get_policy_by_name: %s" % e)
+    print("Exception when calling RegistryApi->get_registry_by_name: %s" % e)
     sys.exit()
 
 # Delete policy by ID
 if args.verbose:
-    print("Deleting Policy by ID %s on API host %s..." % (policy.id, v.get("api_host")))
+    print("Deleting Registry by ID %s on API host %s..." % (registry.id, v.get("api_host")))
 try:
-    api_response = policy_api.delete_policy(policy.id)
+    api_response = registry_api.delete_registry(registry.id)
     if args.verbose:
         pprint(api_response)
 except ApiException as e:
-    print("Exception when calling PolicyApi->delete_policy: %s" % e)
+    print("Exception when calling RegistryApi->delete_registry: %s" % e)
     sys.exit()
 
 if args.verbose:
-    print("Policy deleted, ID " + str(policy.id))
+    print("Registry deleted, ID " + str(registry.id))

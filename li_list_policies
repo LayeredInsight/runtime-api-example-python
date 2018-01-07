@@ -6,14 +6,12 @@
 
 from __future__ import print_function
 import argparse
-import time
-import swagger_client
-from swagger_client.rest import ApiException
 import sys
 from pprint import pprint
+import swagger_client
+from swagger_client.rest import ApiException
 from vyper import v
-import vyper
-from li_utils.envtools import *
+from li_utils.envtools import env_setup
 
 env_setup()
 
@@ -23,7 +21,6 @@ parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_tru
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-
 policy_api = swagger_client.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
@@ -35,8 +32,7 @@ try:
         pprint(policies)
 except ApiException as e:
     print("Exception when calling PolicyApi->get_policies: %s" % e)
-    sys.exit();
+    sys.exit()
 
 for policy in policies:
     print("  %s - %s" % (policy['Name'], policy['Description']))
-

@@ -6,12 +6,12 @@
 
 from __future__ import print_function
 import argparse
-import time
+import sys
+from pprint import pprint
 import swagger_client
 from swagger_client.rest import ApiException
-from pprint import pprint
-import vyper
-from li_utils.envtools import *
+from vyper import v
+from li_utils.envtools import env_setup
 
 env_setup()
 
@@ -22,9 +22,9 @@ parser.add_argument("--name", help="Name for policy")
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-
 policy_api = swagger_client.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
+
 policy = swagger_client.Policy()
 if args.name:
     policy.name = args.name
@@ -57,9 +57,7 @@ try:
         pprint(api_response)
 except ApiException as e:
     print("Exception when calling PolicyApi->add_policy: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
 if args.verbose:
     print("Policy created, ID " + str(policy.id))
-
-

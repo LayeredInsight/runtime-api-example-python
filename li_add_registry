@@ -6,13 +6,11 @@
 
 from __future__ import print_function
 import argparse
-import time
+import sys
 import swagger_client
 from swagger_client.rest import ApiException
-from pprint import pprint
 from vyper import v
-import vyper
-from li_utils.envtools import *
+from li_utils.envtools import env_setup
 
 env_setup()
 
@@ -27,10 +25,10 @@ parser.add_argument("--password", help="Password to authenticate private registr
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-
-# Registry
 registry_api = swagger_client.RegistryApi()
 registry_api.api_client.host = v.get("api_host")
+
+# Registry
 registry = swagger_client.Registry()
 registry.name = args.name
 registry.url = args.url
@@ -47,7 +45,7 @@ try:
     #pprint(api_response)
 except ApiException as e:
     print("Exception when calling RegistryApi->add_registry: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
 if args.verbose:
     print("Registry created, ID " + str(registry.id))

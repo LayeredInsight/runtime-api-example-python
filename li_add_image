@@ -6,13 +6,11 @@
 
 from __future__ import print_function
 import argparse
-import time
+import sys
 import swagger_client
 from swagger_client.rest import ApiException
-from pprint import pprint
 from vyper import v
-import vyper
-from li_utils.envtools import *
+from li_utils.envtools import env_setup
 
 env_setup()
 
@@ -27,24 +25,25 @@ parser.add_argument("--policy", help="Name of security policy to apply to image"
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-
 registry_api = swagger_client.RegistryApi()
+registry_api.api_client.host = v.get("api_host")
+
 if args.verbose:
     print("Looking up registry %s on API host %s..." % (args.registry, v.get("api_host")))
 try:
     registry = registry_api.get_registry_by_name(args.registry)
 except ApiException as e:
     print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
-config_api = swagger_client.ConfigApi()
+config_api = swagger_client.ConfigurationApi()
 if args.verbose:
     print("Looking up config %s on API host %s..." % (args.config, v.get("api_host")))
 try:
-    config = config_api.get_registry_by_name(args.config) ******
+    config = config_api.get_config_by_name(args.config)
 except ApiException as e:
     print("Exception when calling ConfigApi->get_config_by_name: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
 policy_api = swagger_client.PolicyApi()
 if args.verbose:
@@ -53,7 +52,7 @@ try:
     policy = policy_api.get_policy_by_name(args.policy)
 except ApiException as e:
     print("Exception when calling PolicyApi->get_policy_by_name: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
 # Image
 image_api = swagger_client.ImageApi()
@@ -62,9 +61,8 @@ image = swagger_client.Image()
 image.name = args.name
 image.description = args.description
 image.registry = registry.id
-image.config = config.id
-image.policy = policy.id
-image.type = args.type
+image.config_id = config.id
+image.policy_id = policy.id
 
 # Create new Image definition
 if args.verbose:
@@ -74,7 +72,7 @@ try:
     image.id = api_response.id
 except ApiException as e:
     print("Exception when calling ImageApi->add_image: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
 if args.verbose:
     print("Image created, ID " + str(image.id))

@@ -6,13 +6,12 @@
 
 from __future__ import print_function
 import argparse
-import time
+import sys
+from pprint import pprint
 import swagger_client
 from swagger_client.rest import ApiException
-from pprint import pprint
 from vyper import v
-import vyper
-from li_utils.envtools import *
+from li_utils.envtools import env_setup
 
 env_setup()
 
@@ -21,16 +20,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
 parser.add_argument("--name", help="Name for policy", required=True)
 parser.add_argument("--description", help="Description for policy")
-parser.add_argument("--default-file-action", help="Default action for file rules", choices=["allow","deny"], default="allow")
-parser.add_argument("--default-network-action", help="Default action for network rules", choices=["allow","deny"], default="allow")
-parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow","deny"], default="allow")
+parser.add_argument("--default-file-action", help="Default action for file rules", choices=["allow", "deny"], default="allow")
+parser.add_argument("--default-network-action", help="Default action for network rules", choices=["allow", "deny"], default="allow")
+parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow", "deny"], default="allow")
 args = parser.parse_args()
 
 # Configure API key authorization: ApiKey
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-
 policy_api = swagger_client.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
+
 policy = swagger_client.Policy()
 policy.name = args.name
 policy.description = args.description
@@ -51,7 +50,7 @@ try:
         pprint(api_response)
 except ApiException as e:
     print("Exception when calling PolicyApi->add_policy: %s\n" % e)
-    sys.exit();
+    sys.exit()
 
 if args.verbose:
     print("Policy created, ID " + str(policy.id))
