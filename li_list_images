@@ -25,13 +25,13 @@ image_api = swagger_client.ImageApi()
 image_api.api_client.host = v.get("api_host")
 
 if args.verbose:
-    print("Getting Policies on API host %s..." % (v.get("api_host")))
+    print("Getting Images on API host %s..." % (v.get("api_host")))
 try:
     images = image_api.get_images()
     if args.verbose:
         pprint(images)
 except ApiException as e:
-    print("Exception when calling PolicyApi->get_policies: %s" % e)
+    print("Exception when calling ImageApi->get_images: %s" % e)
     sys.exit()
 
 for image in images:

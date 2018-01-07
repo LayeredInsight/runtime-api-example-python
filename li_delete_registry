@@ -36,7 +36,7 @@ except ApiException as e:
     print("Exception when calling RegistryApi->get_registry_by_name: %s" % e)
     sys.exit()
 
-# Delete policy by ID
+# Delete registry by ID
 if args.verbose:
     print("Deleting Registry by ID %s on API host %s..." % (registry.id, v.get("api_host")))
 try:

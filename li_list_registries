@@ -31,7 +31,7 @@ try:
     if args.verbose:
         pprint(registries)
 except ApiException as e:
-    print("Exception when calling ImageApi->get_images: %s" % e)
+    print("Exception when calling RegistryApi->get_registries: %s" % e)
     sys.exit()
 
 for registry in registries:
