@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+import swagger_client
+from swagger_client.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name for config", required=True)
+parser.add_argument("--mq", help="IP or hostname of message queue", required=True)
+parser.add_argument("--logging", help="Enable behavior logging (default true)", choices=["true", "false"], default="true")
+parser.add_argument("--sniffing", help="Enable network sniffing (default false)", choices=["true", "false"], default="false")
+parser.add_argument("--defaultconfig", help="Specifies if this is default configuration (default false)", choices=["true", "false"], default="false")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+config_api = swagger_client.ConfigurationApi()
+config_api.api_client.host = v.get("api_host")
+
+# Config
+config = swagger_client.Config()
+config.name = args.name
+config.mq = args.mq
+config.logging = args.logging
+config.sniffing = args.sniffing
+config.default = args.defaultconfig
+
+# Create new Config definition
+if args.verbose:
+    print("Creating Config %s on API host %s..." % (args.url, v.get("api_host")))
+try:
+    api_response = config_api.add_config(config=config)
+    config.id = api_response.id
+    #pprint(api_response)
+except ApiException as e:
+    print("Exception when calling ConfigurationApi->add_config: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Config created, ID " + str(config.id))
