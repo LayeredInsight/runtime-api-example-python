@@ -38,7 +38,7 @@ config.default = args.defaultconfig
 
 # Create new Config definition
 if args.verbose:
-    print("Creating Config %s on API host %s..." % (args.url, v.get("api_host")))
+    print("Creating Config %s on API host %s..." % (args.name, v.get("api_host")))
 try:
     api_response = config_api.add_config(config=config)
     config.id = api_response.id
