@@ -41,4 +41,4 @@ except ApiException as e:
     print("Exception when calling ImageApi->instrument_image: %s" % e)
     sys.exit()
 
-print("%s instrumentation request submitted." % (image['id']))
+print("%s instrumentation request submitted." % image.id)
