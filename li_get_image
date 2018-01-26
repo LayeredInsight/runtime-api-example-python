@@ -18,7 +18,7 @@ env_setup()
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--imageid", help="ID of image to assign poilcy to", required=True)
+parser.add_argument("--imageid", help="ID of image to get", required=True)
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
