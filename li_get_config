@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+import swagger_client
+from pprint import pprint
+from swagger_client.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--configid", help="ID of config to get", required=True)
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+# swagger_client.configuration.debug = True
+config_api = swagger_client.ConfigurationApi()
+config_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Looking up config %s on API host %s..." % (args.configid, v.get("api_host")))
+try:
+    config = config_api.get_config(args.configid)
+except ApiException as e:
+    print("Exception when calling ConfigurationApi->get_config: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Got config:")
+    pprint(config)
