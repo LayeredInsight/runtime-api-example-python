@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+from pprint import pprint
+import swagger_client
+from swagger_client.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--policyid", help="ID for policy", required=True)
+parser.add_argument("--unsuspend", help="Unsuspend policy, instead of default suspend action", action="store_true")
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+
+# Get policy by name
+if args.verbose:
+    print("Getting Policy by ID \"%s\" on API host %s..." % (args.policyid, v.get("api_host")))
+try:
+    policy = policy_api.get_policy(args.policyid)
+    if args.verbose:
+        pprint(policy)
+except ApiException as e:
+    print("Exception when calling PolicyApi->get_policy: %s" % e)
+    sys.exit()
+
+print("suspended? %s" % policy.suspend)
+print("userid: %s" % policy.user_id)
+if args.verbose:
+    print("Suspending Policy by ID %s on API host %s..." % (policy.id, v.get("api_host")))
+try:
+    if args.unsuspend:
+        policy.suspend = False
+    else:
+        policy.suspend = True
+    api_response = policy_api.update_policy(policy.id, policy=policy)
+    if args.verbose:
+        pprint(api_response)
+except ApiException as e:
+    print("Exception when calling PolicyApi->update_policy: %s" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Policy updated, ID " + str(policy.id))

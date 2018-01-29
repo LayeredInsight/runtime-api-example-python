@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+from pprint import pprint
+import swagger_client
+from swagger_client.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--policyid", help="ID of security policy to apply to image", required=True)
+parser.add_argument("--configid", help="ID of config to assign poilcy to", required=True)
+args = parser.parse_args()
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+policy_api = swagger_client.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Looking up policy %s on API host %s..." % (args.policyid, v.get("api_host")))
+try:
+    policy = policy_api.get_policy(args.policyid)
+except ApiException as e:
+    print("Exception when calling PolicyApi->get_policy_by_name: %s\n" % e)
+    sys.exit()
+
+# if args.verbose:
+#     print("Got policy:")
+#     pprint(policy)
+
+config_api = swagger_client.ConfigurationApi(api_client=policy_api.api_client)
+config_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Looking up config %s on API host %s..." % (args.configid, v.get("api_host")))
+try:
+    config = config_api.get_config(args.configid)
+except ApiException as e:
+    print("Exception when calling ConfigurationApi->get_config: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Got config:")
+    pprint(config)
+
+config.policy_id = policy.id
+
+# Update image
+if args.verbose:
+    print("Updating Config on API host %s..." % (v.get("api_host")))
+    pprint(config)
+try:
+    api_response = config_api.update_config(config.id, config=config)
+except ApiException as e:
+    print("Exception when calling ConfigurationApi->update_config: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Config updated, ID " + str(config.id))
