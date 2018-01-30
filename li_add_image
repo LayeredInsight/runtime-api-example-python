@@ -22,6 +22,7 @@ parser.add_argument("--description", help="Description for image")
 parser.add_argument("--registry", help="Name of registry image is stored in", required=True)
 parser.add_argument("--config", help="Name of configuration to apply to image", required=True)
 parser.add_argument("--policy", help="Name of security policy to apply to image", required=True)
+parser.add_argument("--imageid", help="Database ID for image (for advanced users only)")
 args = parser.parse_args()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
@@ -63,6 +64,9 @@ image.description = args.description
 image.registry = registry.id
 image.config_id = config.id
 image.policy_id = policy.id
+
+if args.imageid:
+    image.id = args.imageid
 
 # Create new Image definition
 if args.verbose:
