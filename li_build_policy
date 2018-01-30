@@ -37,4 +37,4 @@ if args.verbose:
     pprint(api_response)
 
 if args.verbose:
-    print("Behavioral policy created, ID " + str(api_response['TemplateID']))
+    print("Behavioral policy created, ID " + str(api_response.template_id))
