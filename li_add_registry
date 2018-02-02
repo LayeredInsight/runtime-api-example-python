@@ -12,8 +12,6 @@ from swagger_client.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
-env_setup()
-
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
@@ -23,6 +21,8 @@ parser.add_argument("--type", help="Type of registry to add", choices=["dtr"], d
 parser.add_argument("--username", help="Username to authenticate private registry")
 parser.add_argument("--password", help="Password to authenticate private registry")
 args = parser.parse_args()
+
+env_setup()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
 registry_api = swagger_client.RegistryApi()

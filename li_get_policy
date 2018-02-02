@@ -13,13 +13,13 @@ from swagger_client.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
-env_setup()
-
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
 parser.add_argument("--policyid", help="ID of policy to get", required=True)
 args = parser.parse_args()
+
+env_setup()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
 # swagger_client.configuration.debug = True

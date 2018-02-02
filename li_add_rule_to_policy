@@ -13,8 +13,6 @@ from swagger_client.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
-env_setup()
-
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
@@ -24,6 +22,8 @@ parser.add_argument("--default-file-action", help="Default action for file rules
 parser.add_argument("--default-network-action", help="Default action for network rules", choices=["allow", "deny"], default="allow")
 parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow", "deny"], default="allow")
 args = parser.parse_args()
+
+env_setup()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
 policy_api = swagger_client.PolicyApi()

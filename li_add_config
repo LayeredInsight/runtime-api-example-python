@@ -12,8 +12,6 @@ from swagger_client.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
-env_setup()
-
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
@@ -24,6 +22,8 @@ parser.add_argument("--logging", help="Enable behavior logging (default true)", 
 parser.add_argument("--sniffing", help="Enable network sniffing (default false)", choices=["true", "false"], default="false")
 parser.add_argument("--defaultconfig", help="Specifies if this is default configuration (default false)", choices=["true", "false"], default="false")
 args = parser.parse_args()
+
+env_setup()
 
 swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
 config_api = swagger_client.ConfigurationApi()
