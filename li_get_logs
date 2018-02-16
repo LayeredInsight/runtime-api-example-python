@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+import swagger_client
+from pprint import pprint
+from swagger_client.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--containerid", help="ID of container to get logs for", required=True)
+parser.add_argument("--numlogs", help="Maximum number of logs to get")
+args = parser.parse_args()
+
+env_setup()
+
+page_size = 100
+if args.numlogs:
+    page_size = args.numlogs
+
+swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
+# swagger_client.configuration.debug = True
+container_api = swagger_client.ContainerApi()
+container_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Getting %s logs for container %s on API host %s..." % (page_size, args.containerid, v.get("api_host")))
+try:
+    container_logs = container_api.get_container_logs(args.containerid, page_size=page_size)
+except ApiException as e:
+    print("Exception when calling ContainerAPI->get_container_logs: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Got container logs:")
+    print(" Page: %s" % (container_logs.page))
+    print(" PageSize: %s" % (container_logs.page_size))
+    print(" URI: %s" % (container_logs.uri))
+    print(" Total log count: %s" % (container_logs.total_log_count))
+
+pprint(container_logs.log_data[0])
+
+for log in container_logs.log_data:
+   print(" %s,%s,%s,%s,%s,%s,%s" % (log.id, log.process_id, log.process_name, log.system_call, log.system_call_name, log.action, log.file_name))
