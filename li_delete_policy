@@ -16,7 +16,8 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--name", help="Name for policy", required=True)
+parser.add_argument("--name", help="Name for policy")
+parser.add_argument("--policyid", help="ID for policy")
 args = parser.parse_args()
 
 env_setup()
@@ -25,18 +26,34 @@ swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
 policy_api = swagger_client.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
-# Get policy by name
-if args.verbose:
-    print("Getting Policy by name \"%s\" on API host %s..." % (args.name, v.get("api_host")))
-try:
-    policy = policy_api.get_policy_by_name(args.name)
-    if args.verbose:
-        pprint(policy)
-except ApiException as e:
-    print("Exception when calling PolicyApi->get_policy_by_name: %s" % e)
+if (args.name and args.policyid) or not (args.name or args.policyid):
+    print("Need to provide either --name or --policyid arguments.\n")
+    parser.print_help()
     sys.exit()
 
-# Delete policy by ID
+# Get policy by name
+if args.name:
+    if args.verbose:
+        print("Getting Policy by name \"%s\" on API host %s..." % (args.name, v.get("api_host")))
+    try:
+        policy = policy_api.get_policy_by_name(args.name)
+    except ApiException as e:
+        print("Exception when calling PolicyApi->get_policy_by_name: %s" % e)
+        sys.exit()
+# Get policy by ID
+elif args.policyid:
+    if args.verbose:
+        print("Getting Policy by ID \"%s\" on API host %s..." % (args.policyid, v.get("api_host")))
+    try:
+        policy = policy_api.get_policy(args.policyid)
+    except ApiException as e:
+        print("Exception when calling PolicyApi->get_policy: %s" % e)
+        sys.exit()
+
+if args.verbose:
+    pprint(policy)
+
+# Delete policy
 if args.verbose:
     print("Deleting Policy by ID %s on API host %s..." % (policy.id, v.get("api_host")))
 try:
