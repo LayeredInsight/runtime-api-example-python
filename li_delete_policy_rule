@@ -73,7 +73,7 @@ for orule in orig_rules:
         policy.rules.append(orule)
 
 # clobber all rules if empty?
-#if not args.name: 
+#if not args.name:
 #    policy.rules = None
 
 # update new Policy definition
