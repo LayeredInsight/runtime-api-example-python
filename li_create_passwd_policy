@@ -29,13 +29,22 @@ policy = swagger_client.Policy()
 if args.name:
     policy.name = args.name
 else:
-    policy.name = "Default policy"
-policy.description = "Default policy blocks nothing."
+    policy.name = "Protect passwd"
+policy.description = "Blocks processes from reading /etc/passwd"
 policy.default_file_action = "allow"
 policy.default_network_action = "allow"
 policy.default_program_action = "allow"
 policy.schema_version = "v1.0"
 policy.suspend = False
+policy.rules = []
+passwd_rule = swagger_client.PolicyRule()
+passwd_rule.name = "No reading /etc/passwd"
+passwd_rule.rule_type = "syscall"
+passwd_rule.program = "/bin/cat"
+passwd_rule.syscall = 2
+passwd_rule.arg1 = "/etc/passwd"
+passwd_rule.action = "deny"
+policy.rules.append(passwd_rule)
 
 # Create new Policy definition
 if args.verbose:

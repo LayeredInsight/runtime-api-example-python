@@ -47,7 +47,7 @@ policy.rules.append(php_rule)
 
 # Create new Policy definition
 if args.verbose:
-    print("Creating Policy %s on API host %s..." % (args.name, v.get("api_host")))
+    print("Creating Policy %s on API host %s..." % (policy.name, v.get("api_host")))
 try:
     api_response = policy_api.add_policy(policy=policy)
     policy.id = api_response.id
