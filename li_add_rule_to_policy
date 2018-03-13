@@ -77,8 +77,8 @@ if args.rules_csv is not None:
         rule.name = row[0]
       else:
         rule.name = "add rule #{}".format(ctr)
-        
-        
+
+
       # TODO we need to export a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go
       #  and set rule_type automatically to avoid bugs or unexpected behavior
       rule.rule_type = "syscall"
@@ -87,14 +87,14 @@ if args.rules_csv is not None:
         rule.action = "deny"
       else:
         rule.action = "allow"
-      
+
       rule.syscall = int(row[3])
       rule.arg1 = row[4]
       rule.arg2 = row[5]
       rule.arg3 = row[6]
-      
+
       policy.rules.append(rule)
-        
+
       #print(row)
       #print(rule)
     #sys.exit()
@@ -119,10 +119,9 @@ else:
   if rule.rule_type == "file" or rule.rule_type == "execution" or rule.rule_type == "write":
       rule.file = rule.arg1
       rule.arg1 = None
-      
-      
-  policy.rules.append(rule)
 
+
+  policy.rules.append(rule)
 
 #ssh_rule = swagger_client.PolicyRule()
 #ssh_rule.name = "Stop sshd bind"
