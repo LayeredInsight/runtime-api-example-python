@@ -12,6 +12,7 @@ import swagger_client
 from swagger_client.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
+import csv
 
 # Parse CLI
 parser = argparse.ArgumentParser()
@@ -19,6 +20,17 @@ parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_tru
 parser.add_argument("--policyid", help="ID of policy to add rule to", required=False)
 parser.add_argument("--policy-name", help="Name of policy to add rule to", required=False)
 parser.add_argument("--description", help="Description for rule")
+parser.add_argument("--name", help="Name label for rule", default=None)
+parser.add_argument("--rules-csv", help="Policy rules only csv file to add to rules, rule_type will be set to syscall.", default=None)
+parser.add_argument("--rules-csv-fixed-name", help="Single name to use for all imported cvs rules.", default=None)
+parser.add_argument("--rules-csv-names", help="Name selection for imported cvs rules.", choices=["original", "auto"], default="original")
+parser.add_argument("--type", help="rule type", choices=["file", "write", "execution", "listener", "network", "syscall", "syscallgroup", "java"], default="file")
+parser.add_argument("--program", help="Program to match for rule, absolute path highly recommended.", default="*")
+parser.add_argument("--action", help="Action for the rule", choices=["allow", "deny"], default="allow")
+parser.add_argument("--syscall", help="Syscall to match for the rule", type=int, default=0)
+parser.add_argument("--arg1", help="Argument1 to match for the rule", default="")
+parser.add_argument("--arg2", help="Argument2 to match for the rule", default="")
+parser.add_argument("--arg3", help="Argument3 to match for the rule", default="")
 parser.add_argument("--default-file-action", help="Default action for file rules", choices=["allow", "deny"], default="allow")
 parser.add_argument("--default-network-action", help="Default action for network rules", choices=["allow", "deny"], default="allow")
 parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow", "deny"], default="allow")
@@ -53,13 +65,89 @@ except ApiException as e:
         print("Unable to load policy named %s:%s\n" % (args.policy_name, e))
     sys.exit()
 
-ssh_rule = swagger_client.PolicyRule()
-ssh_rule.name = "Stop sshd bind"
-ssh_rule.rule_type = "listener"
-ssh_rule.program = "/usr/sbin/sshd"
-ssh_rule.listening_port = 22
-ssh_rule.action = "deny"
-policy.rules.append(ssh_rule)
+
+if policy.user_id is None:
+    print("Policy user_id is empty %s\n" % (policy.user_id))
+    sys.exit()
+
+if policy.group_id is None:
+    print("Policy group_id is empty %s\n" % (policy.group_id))
+    sys.exit()
+
+#print("Policy user_id is %s\n" % (policy.user_id))
+#print("Policy group_id is %s\n" % (policy.group_id))
+
+numb_fields=7
+ctr=0
+if args.rules_csv is not None:
+  with open(args.rules_csv, 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+      if len(row) < numb_fields:
+        print("Error, csv row does not have % number of fields: %\n" % (numb_fields, row))
+        continue
+
+      ctr += 1
+      rule = swagger_client.PolicyRule()
+      if args.rules_csv_fixed_name is not None:
+        rule.name = args.rules_csv_fixed_name
+      elif args.rules_csv_names == "original":
+        rule.name = row[0]
+      else:
+        rule.name = "add rule #{}".format(ctr)
+
+
+      # TODO we need to export a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go
+      #  and set rule_type automatically to avoid bugs or unexpected behavior
+      rule.rule_type = "syscall"
+      rule.program = row[1]
+      if row[2] == "0":
+        rule.action = "deny"
+      else:
+        rule.action = "allow"
+
+      rule.syscall = int(row[3])
+      rule.arg1 = row[4]
+      rule.arg2 = row[5]
+      rule.arg3 = row[6]
+
+      policy.rules.append(rule)
+
+      #print(row)
+      #print(rule)
+    #sys.exit()
+elif args.name is None:
+  print("Please set --name when adding a rule\n")
+  sys.exit()
+else:
+  rule = swagger_client.PolicyRule()
+  rule.name = args.name
+  # TODO we need to export a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go
+  #  and set rule_type automatically to avoid bugs or unexpected behavior
+  rule.rule_type = args.type
+  rule.syscall = args.syscall
+  rule.program = args.program
+  rule.action = args.action
+  rule.arg1 = args.arg1
+  rule.arg2 = args.arg2
+  rule.arg3 = args.arg3
+
+  # hacks to make policyProvider/policy.go happy
+  #  since it: `newRule[0].Arg1 = rule.File`
+  if rule.rule_type == "file" or rule.rule_type == "execution" or rule.rule_type == "write":
+      rule.file = rule.arg1
+      rule.arg1 = None
+
+
+  policy.rules.append(rule)
+
+#ssh_rule = swagger_client.PolicyRule()
+#ssh_rule.name = "Stop sshd bind"
+#ssh_rule.rule_type = "listener"
+#ssh_rule.program = "/usr/sbin/sshd"
+#ssh_rule.listening_port = 22
+#ssh_rule.action = "deny"
+#policy.rules.append(ssh_rule)
 
 # Create new Policy definition
 if args.verbose:
