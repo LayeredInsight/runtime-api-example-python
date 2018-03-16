@@ -26,6 +26,7 @@ image_api.api_client.host = v.get("api_host")
 
 if args.verbose:
     print("Getting Images on API host %s..." % (v.get("api_host")))
+    print("\tadditional image detail available via `li_get_image`")
 try:
     images = image_api.get_images()
     if args.verbose:
