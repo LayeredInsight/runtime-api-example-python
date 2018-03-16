@@ -16,12 +16,23 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--policy-name", help="Name of policy to add rule to", required=True)
+parser.add_argument("--policyid", help="ID of policy to add rule to", required=False)
+parser.add_argument("--policy-name", help="Name of policy to add rule to", required=False)
 parser.add_argument("--description", help="Description for rule")
 parser.add_argument("--default-file-action", help="Default action for file rules", choices=["allow", "deny"], default="allow")
 parser.add_argument("--default-network-action", help="Default action for network rules", choices=["allow", "deny"], default="allow")
 parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow", "deny"], default="allow")
 args = parser.parse_args()
+
+if args.policy_name is None and args.policyid is None:
+    print("--policy-name or --policyid required\n")
+    print(parser.print_help())
+    sys.exit()
+
+if args.policy_name is not None and args.policyid is not None:
+    print("--policy-name cannot be used with --policyid\n")
+    print(parser.print_help())
+    sys.exit()
 
 env_setup()
 
@@ -30,9 +41,16 @@ policy_api = swagger_client.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
 try:
-    policy = policy_api.get_policy_by_name(args.policy_name)
+    policy = None
+    if args.policyid is not None:
+        policy = policy_api.get_policy(args.policyid)
+    else:
+        policy = policy_api.get_policy_by_name(args.policy_name)
 except ApiException as e:
-    print("Unable to load policy named %s:%s\n" % (args.policyname, e))
+    if args.policyid is not None:
+        print("Unable to load policy with id %s:%s\n" % (args.policyid, e))
+    else:
+        print("Unable to load policy named %s:%s\n" % (args.policy_name, e))
     sys.exit()
 
 ssh_rule = swagger_client.PolicyRule()
