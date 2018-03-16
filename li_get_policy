@@ -35,7 +35,7 @@ except ApiException as e:
     sys.exit()
 
 if args.verbose:
-    print("Got policy:")
+    print("policy detail:")
     print(" Name: %s" % (policy.name))
     print(" ID: %s" % (policy.id))
     print(" Description: %s" % (policy.description))
@@ -43,3 +43,5 @@ if args.verbose:
     print(" Group ID: %s" % (policy.group_id))
     print(" Schema Version: %s" % (policy.schema_version))
     # pprint(policy)
+
+print(" %s - %s - %s" % (policy.id, policy.name, policy.description))

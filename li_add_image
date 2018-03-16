@@ -18,10 +18,32 @@ parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_tru
 parser.add_argument("--name", help="Name for image", required=True)
 parser.add_argument("--description", help="Description for image")
 parser.add_argument("--registry", help="Name of registry image is stored in", required=True)
-parser.add_argument("--config", help="Name of configuration to apply to image", required=True)
-parser.add_argument("--policy", help="Name of security policy to apply to image", required=True)
+parser.add_argument("--config", help="Name of configuration to apply to image", required=False)
+parser.add_argument("--configid", help="ID of configuration to apply to image", required=False)
+parser.add_argument("--policy", help="Name of security policy to apply to image", required=False)
+parser.add_argument("--policyid", help="ID of security policy to apply to image", required=False)
 parser.add_argument("--imageid", help="Database ID for image (for advanced users only)")
 args = parser.parse_args()
+
+if args.policy is None and args.policyid is None:
+    print("--policy or --policyid required\n")
+    print(parser.print_help())
+    sys.exit()
+
+if args.policy is not None and args.policyid is not None:
+    print("--policy cannot be used with --policyid\n")
+    print(parser.print_help())
+    sys.exit()
+
+if args.config is None and args.configid is None:
+    print("--config or --configid required\n")
+    print(parser.print_help())
+    sys.exit()
+
+if args.config is not None and args.configid is not None:
+    print("--config cannot be used with --configid\n")
+    print(parser.print_help())
+    sys.exit()
 
 env_setup()
 
@@ -30,7 +52,7 @@ registry_api = swagger_client.RegistryApi()
 registry_api.api_client.host = v.get("api_host")
 
 if args.verbose:
-    print("Looking up registry %s on API host %s..." % (args.registry, v.get("api_host")))
+    print("Looking up registry '%s' on API host %s..." % (args.registry, v.get("api_host")))
 try:
     registry = registry_api.get_registry_by_name(args.registry)
 except ApiException as e:
@@ -38,21 +60,41 @@ except ApiException as e:
     sys.exit()
 
 config_api = swagger_client.ConfigurationApi()
-if args.verbose:
-    print("Looking up config %s on API host %s..." % (args.config, v.get("api_host")))
+
 try:
-    config = config_api.get_config_by_name(args.config)
+    config = None
+    if args.configid is not None:
+        if args.verbose:
+            print("Looking up configid %s on API host %s..." % (args.configid, v.get("api_host")))
+        config = config_api.get_config(args.configid)
+    else:
+        if args.verbose:
+            print("Looking up config '%s' on API host %s..." % (args.config, v.get("api_host")))
+        config = config_api.get_config_by_name(args.config)
 except ApiException as e:
-    print("Exception when calling ConfigApi->get_config_by_name: %s\n" % e)
+    if args.configid is not None:
+        print("Unable to get config with id %s:%s\n" % (args.configid, e))
+    else:
+        print("Unable to get config named '%s':%s\n" % (args.config, e))
     sys.exit()
 
 policy_api = swagger_client.PolicyApi()
-if args.verbose:
-    print("Looking up policy %s on API host %s..." % (args.policy, v.get("api_host")))
+
 try:
-    policy = policy_api.get_policy_by_name(args.policy)
+    policy = None
+    if args.policyid is not None:
+        if args.verbose:
+            print("Looking up policyid %s on API host %s..." % (args.policyid, v.get("api_host")))
+        policy = policy_api.get_policy(args.policyid)
+    else:
+        if args.verbose:
+            print("Looking up policy '%s' on API host %s..." % (args.policy, v.get("api_host")))
+        policy = policy_api.get_policy_by_name(args.policy)
 except ApiException as e:
-    print("Exception when calling PolicyApi->get_policy_by_name: %s\n" % e)
+    if args.policyid is not None:
+        print("Unable to get policy with id %s:%s\n" % (args.policyid, e))
+    else:
+        print("Unable to get policy named '%s':%s\n" % (args.policy, e))
     sys.exit()
 
 # Image

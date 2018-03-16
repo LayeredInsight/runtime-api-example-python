@@ -35,5 +35,7 @@ except ApiException as e:
     sys.exit()
 
 if args.verbose:
-    print("Got config:")
+    print("config detail:")
     pprint(config)
+
+print(" %s - %s" % (config.id, config.name))
