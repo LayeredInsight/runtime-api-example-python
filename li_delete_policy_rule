@@ -8,8 +8,8 @@ from __future__ import print_function
 import argparse
 import sys
 from pprint import pprint
-import swagger_client
-from swagger_client.rest import ApiException
+import layint_runtime_api
+from layint_runtime_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -30,8 +30,8 @@ args = parser.parse_args()
 
 env_setup()
 
-swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-policy_api = swagger_client.PolicyApi()
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+policy_api = layint_runtime_api.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
 try:
@@ -53,7 +53,7 @@ if policy.group_id is None:
 #print("Policy group_id is %s\n" % (policy.group_id))
 
 # TBD prototype rule matching
-#rule = swagger_client.PolicyRule()
+#rule = layint_runtime_api.PolicyRule()
 #rule.name = args.name
 # TODO we need to export a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go
 #  and set rule_type automatically to avoid bugs or unexpected behavior

@@ -7,8 +7,8 @@
 from __future__ import print_function
 import argparse
 import sys
-import swagger_client
-from swagger_client.rest import ApiException
+import layint_runtime_api
+from layint_runtime_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -24,12 +24,12 @@ args = parser.parse_args()
 
 env_setup()
 
-swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-registry_api = swagger_client.RegistryApi()
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+registry_api = layint_runtime_api.RegistryApi()
 registry_api.api_client.host = v.get("api_host")
 
 # Registry
-registry = swagger_client.Registry()
+registry = layint_runtime_api.Registry()
 registry.name = args.name
 registry.url = args.url
 registry.type = args.type

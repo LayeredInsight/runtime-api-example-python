@@ -7,8 +7,8 @@
 from __future__ import print_function
 import argparse
 import sys
-import swagger_client
-from swagger_client.rest import ApiException
+import layint_runtime_api
+from layint_runtime_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -47,8 +47,8 @@ if args.config is not None and args.configid is not None:
 
 env_setup()
 
-swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-registry_api = swagger_client.RegistryApi()
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+registry_api = layint_runtime_api.RegistryApi()
 registry_api.api_client.host = v.get("api_host")
 
 if args.verbose:
@@ -59,7 +59,7 @@ except ApiException as e:
     print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
     sys.exit()
 
-config_api = swagger_client.ConfigurationApi()
+config_api = layint_runtime_api.ConfigurationApi()
 
 try:
     config = None
@@ -78,7 +78,7 @@ except ApiException as e:
         print("Unable to get config named '%s':%s\n" % (args.config, e))
     sys.exit()
 
-policy_api = swagger_client.PolicyApi()
+policy_api = layint_runtime_api.PolicyApi()
 
 try:
     policy = None
@@ -98,9 +98,9 @@ except ApiException as e:
     sys.exit()
 
 # Image
-image_api = swagger_client.ImageApi()
+image_api = layint_runtime_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
-image = swagger_client.Image()
+image = layint_runtime_api.Image()
 image.name = args.name
 image.description = args.description
 image.registry = registry.id

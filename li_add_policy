@@ -8,8 +8,8 @@ from __future__ import print_function
 import argparse
 import sys
 from pprint import pprint
-import swagger_client
-from swagger_client.rest import ApiException
+import layint_runtime_api
+from layint_runtime_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -26,11 +26,11 @@ args = parser.parse_args()
 env_setup()
 
 # Configure API key authorization: ApiKey
-swagger_client.configuration.api_key['Authorization'] = v.get("api_key")
-policy_api = swagger_client.PolicyApi()
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+policy_api = layint_runtime_api.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
-policy = swagger_client.Policy()
+policy = layint_runtime_api.Policy()
 policy.name = args.name
 policy.description = args.description
 policy.default_file_action = "allow"
