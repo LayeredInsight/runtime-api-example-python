@@ -6,8 +6,9 @@
 
 # docker build -t runtime-api-client .
 FROM python:2.7.14-alpine3.7
-RUN mkdir /layint
+RUN mkdir -p /layint/li_utils/
 COPY * /layint/
+COPY li_utils/* /layint/li_utils/
 RUN apk update && \
     apk add gcc musl-dev && \
     pip install layint-runtime-api && \
