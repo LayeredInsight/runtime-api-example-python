@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+from pprint import pprint
+import layint_runtime_api
+from layint_runtime_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+env_setup()
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--containerid", help="ID of container", required=True)
+args = parser.parse_args()
+
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+container_api = layint_runtime_api.ContainerApi()
+container_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Deleting Container by ID %s on API host %s..." % (args.containerid, v.get("api_host")))
+try:
+    api_response = container_api.delete_container(args.containerid)
+    if args.verbose:
+        pprint(api_response)
+except ApiException as e:
+    print("Exception when calling ContainerApi->delete_container: %s" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Container deleted, ID " + str(args.containerid))
