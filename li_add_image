@@ -132,6 +132,8 @@ if args.wait:
     while instrumented != True:
         if args.verbose:
             print("Waiting for instrumentation of Image %s. Current status: %s" % (image.id, image.status_msg))
+            # Flush output so it's seen in active build logs
+            sys.stdout.flush()
         try:
             image = image_api.get_image(image.id)
             if image.status_msg == "OK":
