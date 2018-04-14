@@ -55,24 +55,25 @@ except ApiException as e:
     print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
     sys.exit()
 
-config_api = layint_runtime_api.ConfigurationApi()
+if args.config is not None or args.configid is not None:
+    config_api = layint_runtime_api.ConfigurationApi()
 
-try:
-    config = None
-    if args.configid is not None:
-        if args.verbose:
-            print("Looking up configid %s on API host %s..." % (args.configid, v.get("api_host")))
-        config = config_api.get_config(args.configid)
-    else:
-        if args.verbose:
-            print("Looking up config '%s' on API host %s..." % (args.config, v.get("api_host")))
-        config = config_api.get_config_by_name(args.config)
-except ApiException as e:
-    if args.configid is not None:
-        print("Unable to get config with id %s:%s\n" % (args.configid, e))
-    else:
-        print("Unable to get config named '%s':%s\n" % (args.config, e))
-    sys.exit()
+    try:
+        config = None
+        if args.configid is not None:
+            if args.verbose:
+                print("Looking up configid %s on API host %s..." % (args.configid, v.get("api_host")))
+            config = config_api.get_config(args.configid)
+        else:
+            if args.verbose:
+                print("Looking up config '%s' on API host %s..." % (args.config, v.get("api_host")))
+            config = config_api.get_config_by_name(args.config)
+    except ApiException as e:
+        if args.configid is not None:
+            print("Unable to get config with id %s:%s\n" % (args.configid, e))
+        else:
+            print("Unable to get config named '%s':%s\n" % (args.config, e))
+        sys.exit()
 
 policy_api = layint_runtime_api.PolicyApi()
 
@@ -100,7 +101,8 @@ image = layint_runtime_api.Image()
 image.name = args.name
 image.description = args.description
 image.registry = registry.id
-image.config_id = config.id
+if 'config' in vars():
+    image.config_id = config.id
 image.policy_id = policy.id
 
 if args.imageid:
