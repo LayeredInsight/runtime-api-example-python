@@ -36,11 +36,6 @@ if args.policy is not None and args.policyid is not None:
     print(parser.print_help())
     sys.exit()
 
-if args.config is None and args.configid is None:
-    print("--config or --configid required\n")
-    print(parser.print_help())
-    sys.exit()
-
 if args.config is not None and args.configid is not None:
     print("--config cannot be used with --configid\n")
     print(parser.print_help())
