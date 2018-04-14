@@ -7,6 +7,7 @@
 from __future__ import print_function
 import argparse
 import sys
+import time
 import layint_runtime_api
 from layint_runtime_api.rest import ApiException
 from vyper import v
@@ -24,6 +25,7 @@ parser.add_argument("--policy", help="Name of security policy to apply to image"
 parser.add_argument("--policyid", help="ID of security policy to apply to image", required=False)
 parser.add_argument("--imageid", help="Database ID for image (for advanced users only)")
 parser.add_argument("--instrument", help="Instrument image", action="store_true", required=False)
+parser.add_argument("--wait", help="Wait for instrumentation to complete", action="store_true", required=False)
 args = parser.parse_args()
 
 if args.policy is None and args.policyid is None:
@@ -124,3 +126,22 @@ except ApiException as e:
 
 if args.verbose:
     print("Image created, ID " + str(image.id))
+
+if args.wait:
+    instrumented = False
+    while instrumented != True:
+        if args.verbose:
+            print("Waiting for instrumentation of Image %s. Current status: %s\n" % (image.id, image.status_msg))
+        try:
+            image = image_api.get_image(image.id)
+            if image.status_msg == "OK":
+                instrumented = True
+            else:
+                time.sleep(5)
+        except ApiException as e:
+            print("Exception when calling ImageApi->get_image: %s\n" % e)
+            sys.exit()
+
+    if args.verbose:
+        print("Final image status: " + image.status_msg)
+
