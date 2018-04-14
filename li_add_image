@@ -131,7 +131,7 @@ if args.wait:
     instrumented = False
     while instrumented != True:
         if args.verbose:
-            print("Waiting for instrumentation of Image %s. Current status: %s\n" % (image.id, image.status_msg))
+            print("Waiting for instrumentation of Image %s. Current status: %s" % (image.id, image.status_msg))
         try:
             image = image_api.get_image(image.id)
             if image.status_msg == "OK":
