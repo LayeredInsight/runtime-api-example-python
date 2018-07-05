@@ -36,6 +36,11 @@ registry.type = args.type
 registry.username = args.username
 registry.password = args.password
 
+if registry.url.startswith("http://") or registry.url.startswith("https://"):
+    print("ERROR: URL should not start with http:// or https://")
+    print("Current value for URL: " + registry.url)
+    sys.exit()
+
 # Create new Registry definition
 if args.verbose:
     print("Creating Registry %s on API host %s..." % (args.url, v.get("api_host")))
