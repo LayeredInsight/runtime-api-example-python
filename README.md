@@ -35,7 +35,7 @@ export LI_API_HOST=http://localhost/v0.01
 
 ## Finally, run the scripts
 ```
-li_add_registry --name test2 --url=http://10.0.2.15:4000 --type dtr --verbose
+li_add_registry --name test2 --url=internal-registry.corp --type dtr --verbose
 ```
 
 ## Examples
