@@ -19,6 +19,8 @@ parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_tru
 parser.add_argument("--name", help="Name for image", required=True)
 parser.add_argument("--description", help="Description for image")
 parser.add_argument("--registry", help="Name of registry image is stored in", required=True)
+parser.add_argument("--push-registry", help="Name of registry to push layered image", required=False)
+parser.add_argument("--push-name", help="Name for image to push", required=False)
 parser.add_argument("--config", help="Name of configuration to apply to image", required=False)
 parser.add_argument("--configid", help="ID of configuration to apply to image", required=False)
 parser.add_argument("--policy", help="Name of security policy to apply to image", required=False)
@@ -31,17 +33,19 @@ args = parser.parse_args()
 if args.policy is None and args.policyid is None:
     print("--policy or --policyid required\n")
     print(parser.print_help())
-    sys.exit()
+    sys.exit(1)
 
 if args.policy is not None and args.policyid is not None:
     print("--policy cannot be used with --policyid\n")
     print(parser.print_help())
-    sys.exit()
+    sys.exit(1)
+
+# image.configid can be empty, and then the default config will be used
 
 if args.config is not None and args.configid is not None:
     print("--config cannot be used with --configid\n")
     print(parser.print_help())
-    sys.exit()
+    sys.exit(1)
 
 env_setup()
 
@@ -55,13 +59,21 @@ try:
     registry = registry_api.get_registry_by_name(args.registry)
 except ApiException as e:
     print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
-    sys.exit()
+    sys.exit(1)
 
+push_registry=None
+if args.push_registry is not None:
+    try:
+        push_registry = registry_api.get_registry_by_name(args.push_registry)
+    except ApiException as e:
+        print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
+        sys.exit(1)
+
+config = None
 if args.config is not None or args.configid is not None:
     config_api = layint_runtime_api.ConfigurationApi()
 
     try:
-        config = None
         if args.configid is not None:
             if args.verbose:
                 print("Looking up configid %s on API host %s..." % (args.configid, v.get("api_host")))
@@ -75,7 +87,7 @@ if args.config is not None or args.configid is not None:
             print("Unable to get config with id %s:%s\n" % (args.configid, e))
         else:
             print("Unable to get config named '%s':%s\n" % (args.config, e))
-        sys.exit()
+        sys.exit(2)
 
 policy_api = layint_runtime_api.PolicyApi()
 
@@ -94,7 +106,7 @@ except ApiException as e:
         print("Unable to get policy with id %s:%s\n" % (args.policyid, e))
     else:
         print("Unable to get policy named '%s':%s\n" % (args.policy, e))
-    sys.exit()
+    sys.exit(3)
 
 # Image
 image_api = layint_runtime_api.ImageApi()
@@ -103,12 +115,21 @@ image = layint_runtime_api.Image()
 image.name = args.name
 image.description = args.description
 image.registry = registry.id
-if 'config' in vars():
+if config is not None:
     image.config_id = config.id
 image.policy_id = policy.id
 
 if args.imageid:
     image.id = args.imageid
+
+if args.push_registry is not None:
+    image.push_registry = push_registry.id
+    if args.push_name is not None:
+        image.push_name = args.push_name
+    else:
+        # fall back to original image name
+        print("Using original image name in push registry since push-name not specified: %s/%s" % (push_registry.url, image.name))
+        image.push_name = image.name
 
 instrument = "false"
 if args.instrument:
@@ -122,10 +143,13 @@ try:
     image.id = api_response.id
 except ApiException as e:
     print("Exception when calling ImageApi->add_image: %s\n" % e)
-    sys.exit()
+    sys.exit(1)
 
 if args.verbose:
     print("Image created, ID " + str(image.id))
+else:
+    # required for li_instrument
+    print(str(image.id))
 
 if args.wait:
     instrumented = False
@@ -146,4 +170,3 @@ if args.wait:
 
     if args.verbose:
         print("Final image status: " + image.status_msg)
-
