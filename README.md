@@ -1,4 +1,4 @@
-[![Docker Pulls](https://img.shields.io/docker/pulls/layeredinsight/runtime-python-client.svg?style=plastic)](https://hub.docker.com/r/layeredinsightruntime-python-clientdockerjob/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/layeredinsight/runtime-python-client.svg?style=plastic)](https://hub.docker.com/r/layeredinsight/runtime-python-client/)
 
 # Runtime client API scripts
 This is a collection of python scripts leveraging our Swagger library
