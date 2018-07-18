@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+#
+# waits for a given image to complete instrumentation
+#  - derived from li_get_image
+
+from __future__ import print_function
+import argparse
+import sys
+import time
+import layint_runtime_api
+from pprint import pprint
+from layint_runtime_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--imageid", help="ID of image to get", required=True)
+parser.add_argument("--sleep", help="Time to sleep between checks in seconds", required=False, default=5)
+args = parser.parse_args()
+
+env_setup()
+
+# TODO get const from swagger
+ImageStatusError = 3
+ImageStatusActive = 5
+
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+# layint_runtime_api.configuration.debug = True
+image_api = layint_runtime_api.ImageApi()
+image_api.api_client.host = v.get("api_host")
+
+while True:
+
+  if args.verbose:
+      print("Looking up image %s on API host %s..." % (args.imageid, v.get("api_host")))
+  try:
+      image = image_api.get_image(args.imageid)
+  except ApiException as e:
+      print("Exception when calling ImageApi->get_image: %s\n" % e)
+      #sys.exit()
+
+  if args.verbose:
+      print("image detail:")
+      pprint(image)
+
+  print(" %s - %s - %s" % (image.id, image.name, image.status_msg))
+
+  if image.status == ImageStatusError:
+      sys.exit(1)
+
+  if  image.status == ImageStatusActive or image.status_msg == "OK":
+      break
+
+  time.sleep(float(args.sleep))
+
+
