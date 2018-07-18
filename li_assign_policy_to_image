@@ -31,7 +31,7 @@ if args.verbose:
 try:
     policy = policy_api.get_policy(args.policyid)
 except ApiException as e:
-    print("Exception when calling PolicyApi->get_policy_by_name: %s\n" % e)
+    print("Exception when calling PolicyApi->get_policy: %s\n" % e)
     sys.exit()
 
 image_api = layint_runtime_api.ImageApi()
