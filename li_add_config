@@ -18,16 +18,25 @@ parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_tru
 parser.add_argument("--name", help="Name for config", required=True)
 parser.add_argument("--mq", help="IP or hostname of message queue", required=True)
 parser.add_argument("--policyid", help="ID of security policy to apply to the configuration", required=False)
+parser.add_argument("--policy", help="Name of policy to add rule to", required=False)
 parser.add_argument("--logging", help="Enable behavior logging (default true)", choices=["true", "false"], default="true")
 parser.add_argument("--sniffing", help="Enable network sniffing (default false)", choices=["true", "false"], default="false")
 parser.add_argument("--defaultconfig", help="Specifies if this is default configuration (default false)", choices=["true", "false"], default="false")
 args = parser.parse_args()
+
+if (args.policy and args.policyid) or not (args.policy or args.policyid):
+    print("Need to provide either --policy or --policyid arguments, but not both.\n")
+    parser.print_help()
+    sys.exit()
 
 env_setup()
 
 layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
 config_api = layint_runtime_api.ConfigurationApi()
 config_api.api_client.host = v.get("api_host")
+
+policy_api = layint_runtime_api.PolicyApi()
+policy_api.api_client.host = v.get("api_host")
 
 # Config
 config = layint_runtime_api.Config()
@@ -37,6 +46,16 @@ config.logging = args.logging
 config.sniffing = args.sniffing
 config.default = args.defaultconfig
 config.policy_id = args.policyid
+
+# Get policy by name
+if args.policy is not None:
+    if args.verbose:
+        print("Getting Policy by name \"%s\" on API host %s..." % (args.policy, v.get("api_host")))
+    try:
+        config.policy_id = policy_api.get_policy_by_name(args.policy).id
+    except ApiException as e:
+        print("Exception when calling PolicyApi->get_policy_by_name: %s" % e)
+        sys.exit()
 
 # Create new Config definition
 if args.verbose:
