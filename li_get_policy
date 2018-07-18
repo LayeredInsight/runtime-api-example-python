@@ -42,6 +42,23 @@ if args.verbose:
     print(" User ID: %s" % (policy.user_id))
     print(" Group ID: %s" % (policy.group_id))
     print(" Schema Version: %s" % (policy.schema_version))
+    print("")
     # pprint(policy)
 
 print(" %s - %s - %s" % (policy.id, policy.name, policy.description))
+
+# print verbose info in csv format so rules could be placed into a policy.csv
+if args.verbose:
+    ctr = 1
+    print("policy.rules:")
+    for rule in policy.rules:
+        #if rule.syscall == 500: # option to ignore getnameinfo
+        #    continue
+        actionInt = 0
+        if rule.action == "allow":
+            actionInt = 1
+        #if rule.rule_type.lower() == "listener" or rule.rule_type.lower() == "execution":
+        #rule_name = "rule #%d" % (ctr)
+        rule_name=""
+        print("%s,%s,%s,%s,%s,%s,%s," % (rule_name, rule.program, actionInt, rule.syscall, rule.arg1, rule.arg2, rule.arg3)) #rule.file))
+        ctr = ctr + 1
