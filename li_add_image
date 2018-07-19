@@ -30,10 +30,7 @@ parser.add_argument("--instrument", help="Instrument image", action="store_true"
 parser.add_argument("--wait", help="Wait for instrumentation to complete", action="store_true", required=False)
 args = parser.parse_args()
 
-if args.policy is None and args.policyid is None:
-    print("--policy or --policyid required\n")
-    print(parser.print_help())
-    sys.exit(1)
+# image.policyid can be empty, and then the company.PolicyID will be used
 
 if args.policy is not None and args.policyid is not None:
     print("--policy cannot be used with --policyid\n")
@@ -89,24 +86,26 @@ if args.config is not None or args.configid is not None:
             print("Unable to get config named '%s':%s\n" % (args.config, e))
         sys.exit(2)
 
-policy_api = layint_runtime_api.PolicyApi()
 
-try:
-    policy = None
-    if args.policyid is not None:
-        if args.verbose:
-            print("Looking up policyid %s on API host %s..." % (args.policyid, v.get("api_host")))
-        policy = policy_api.get_policy(args.policyid)
-    else:
-        if args.verbose:
-            print("Looking up policy '%s' on API host %s..." % (args.policy, v.get("api_host")))
-        policy = policy_api.get_policy_by_name(args.policy)
-except ApiException as e:
-    if args.policyid is not None:
-        print("Unable to get policy with id %s:%s\n" % (args.policyid, e))
-    else:
-        print("Unable to get policy named '%s':%s\n" % (args.policy, e))
-    sys.exit(3)
+policy = None
+if args.policy is not None or args.policyid is not None:
+    policy_api = layint_runtime_api.PolicyApi()
+
+    try:
+        if args.policyid is not None:
+            if args.verbose:
+                print("Looking up policyid %s on API host %s..." % (args.policyid, v.get("api_host")))
+            policy = policy_api.get_policy(args.policyid)
+        else:
+            if args.verbose:
+                print("Looking up policy '%s' on API host %s..." % (args.policy, v.get("api_host")))
+            policy = policy_api.get_policy_by_name(args.policy)
+    except ApiException as e:
+        if args.policyid is not None:
+            print("Unable to get policy with id %s:%s\n" % (args.policyid, e))
+        else:
+            print("Unable to get policy named '%s':%s\n" % (args.policy, e))
+        sys.exit(3)
 
 # Image
 image_api = layint_runtime_api.ImageApi()
@@ -117,7 +116,8 @@ image.description = args.description
 image.registry = registry.id
 if config is not None:
     image.config_id = config.id
-image.policy_id = policy.id
+if policy is not None:
+    image.policy_id = policy.id
 
 if args.imageid:
     image.id = args.imageid
