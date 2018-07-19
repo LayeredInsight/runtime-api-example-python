@@ -16,6 +16,7 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--fqdn", help="FQDN or URL to match", required=False)
 args = parser.parse_args()
 
 env_setup()
@@ -35,4 +36,7 @@ except ApiException as e:
     sys.exit()
 
 for registry in registries:
-    print("  %s" % (registry['Name']))
+    # match FQDN for li_instrument support
+    imageFQDN=registry['URL']
+    if args.fqdn is None or args.fqdn == imageFQDN:
+        print("  %s" % (registry['Name']))

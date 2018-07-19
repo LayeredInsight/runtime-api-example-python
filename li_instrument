@@ -1,0 +1,83 @@
+#!/bin/bash
+# if only 'ash' available, execute with: li li_instrument ...
+#
+# example script to LI instrument an existing or new registry image
+#
+# @arg1 imageName
+# @arg2 optional: LI registry_name to push instrumented image (if not the pull registry)
+#   warning: this is not the registry FQDN, but the LI Name for the registry
+#   caveat: if the image has been previously instrumented, 
+#           then the original image pull or push registry will be used
+# @arg3 optional: relative image_name of instrumented image for push registry (e.g. username/image:tag)
+#   caveat: if the image has been previously instrumented, 
+#           then the original image pull or push registry will be used
+#
+# @env config_name, policy_name to assign to image if not the LI runtime's default configuration and customer policy
+# @env image_decription: a decription to provide for the image (a description will be provided if not set)
+#
+# @depends the image's registry must already be added via: li_add_registry
+# @depends the image's push registry must already be added via: li_add_registry
+# @warning does not support a image url, or li_registry with http:// or https:// scheme
+
+set -e
+
+# split $1 into registry_fqdn and image
+sep="/"
+registry_fqdn=${1%%"$sep"*}
+image_name=${1#*"$sep"}
+
+timestamp=`date '+%Y-%m-%d_%H:%M:%S'`
+
+# we have to add a special case for docker since we a registry with --url="docker.io" may cause other issues
+if [[ "$registry_fqdn" == "docker.io" ]]; then
+  liregistry_name="$registry_fqdn"
+else
+  # lookup registry name on LI server from registry FQDN
+  liregistry_name=`./li_list_registries --fqdn "$registry_fqdn"`
+  # strip whitespace from li_list_registries output format
+  liregistry_name=`echo $liregistry_name`
+fi
+
+if [[ "$2" != "" ]]; then
+  opt+=(--push-registry)
+  opt+=("$2")
+fi
+if [[ "$3" != "" ]]; then
+  opt+=(--push-name)
+  opt+=("$3")
+fi
+
+if [[ "$image_decription" == "" ]]; then
+  image_decription="$image_name $timestamp"
+fi
+
+# get the imageid if it already exists
+out=`./li_list_images --name "$image_name"`
+imageid=`echo $out | awk '{print $1}'`
+
+# backend should assign default config if not specified
+if [[ "$config_name" != "" ]]; then
+  opt+=(--config)
+  opt+=("$config_name")
+fi
+# backend should assign default company.PolicyID if not specified
+#  TODO pull and check company.PolicyID if not specified
+if [[ "$policy_name" != "" ]]; then
+  opt+=(--policy)
+  opt+=("$policy_name")
+fi
+
+# add image if it did not previously exist
+if [[ "$imageid" == "" ]]; then
+  set -x
+  imageid=`./li_add_image \
+	--name "$image_name" \
+	--description "$image_decription" \
+	--registry "$liregistry_name" \
+	"${opt[@]}"`
+fi
+set -x
+
+./li_instrument_image --imageid $imageid
+
+./li_wait_for_instrumentation --imageid $imageid --sleep 5
