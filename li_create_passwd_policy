@@ -38,10 +38,26 @@ policy.schema_version = "v1.0"
 policy.suspend = False
 policy.rules = []
 passwd_rule = layint_runtime_api.PolicyRule()
-passwd_rule.name = "No reading /etc/passwd"
+passwd_rule.name = "No opening /etc/passwd"
 passwd_rule.rule_type = "syscall"
 passwd_rule.program = "/bin/cat"
-passwd_rule.syscall = 2
+passwd_rule.syscall = "sys_open"
+passwd_rule.arg1 = "/etc/passwd"
+passwd_rule.action = "deny"
+policy.rules.append(passwd_rule)
+passwd_rule = layint_runtime_api.PolicyRule()
+passwd_rule.name = "No read /etc/passwd"
+passwd_rule.rule_type = "syscall"
+passwd_rule.program = "/bin/cat"
+passwd_rule.syscall = "sys_read"
+passwd_rule.arg1 = "/etc/passwd"
+passwd_rule.action = "deny"
+policy.rules.append(passwd_rule)
+passwd_rule = layint_runtime_api.PolicyRule()
+passwd_rule.name = "No readv /etc/passwd"
+passwd_rule.rule_type = "syscall"
+passwd_rule.program = "/bin/cat"
+passwd_rule.syscall = "sys_readv"
 passwd_rule.arg1 = "/etc/passwd"
 passwd_rule.action = "deny"
 policy.rules.append(passwd_rule)

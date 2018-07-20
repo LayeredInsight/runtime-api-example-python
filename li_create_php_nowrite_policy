@@ -29,7 +29,7 @@ policy = layint_runtime_api.Policy()
 if args.name:
     policy.name = args.name
 else:
-    policy.name = "PHP No write"
+    policy.name = "PHP No write test v2"
 policy.description = "Blocks PHP apps from writing under /var/www/html"
 policy.default_file_action = "allow"
 policy.default_network_action = "allow"
@@ -40,6 +40,7 @@ policy.rules = []
 php_rule = layint_runtime_api.PolicyRule()
 php_rule.name = "Don't write to web site"
 php_rule.rule_type = "file"
+php_rule.syscall = "sys_write"
 php_rule.program = "/usr/sbin/httpd"
 php_rule.file = "/var/www/html/*"
 php_rule.action = "deny"
