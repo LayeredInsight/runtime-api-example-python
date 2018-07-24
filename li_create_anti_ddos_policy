@@ -30,25 +30,32 @@ if args.name:
     policy.name = args.name
 else:
     policy.name = "Anti-recon and dos protection"
+
 policy.description = "Detects port scans, limits ssh DOS attack "
 policy.default_file_action = "allow"
 policy.default_network_action = "allow"
 policy.default_program_action = "allow"
 policy.schema_version = "v1.0"
 policy.suspend = False
+
 policy_limits = layint_runtime_api.Limit()
 policy_limits.max_num_proc = 1500
 policy_limits.max_proc_life = 750
+
 syscall_limit = layint_runtime_api.SyscallLimit()
 syscall_limit.syscall_name = "sys_read"
 syscall_limit.rate_per_sec = 10
+
 policy_limits.syscalls = []
 policy_limits.syscalls.append(syscall_limit)
+
 process_limit = layint_runtime_api.ProcessLimit()
 process_limit.process_name = "sshd"
 process_limit.rate_per_sec = 20
-policy_limits.process_limit = []
-policy_limits.process_limit.append(process_limit)
+
+policy_limits.processes = []
+policy_limits.processes.append(process_limit)
+policy.limits = policy_limits
 
 # Create new Policy definition
 if args.verbose:

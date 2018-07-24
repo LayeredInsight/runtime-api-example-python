@@ -49,6 +49,7 @@ print(" %s - %s - %s" % (policy.id, policy.name, policy.description))
 
 # print verbose info in csv format so rules could be placed into a policy.csv
 if args.verbose:
+    print("policy limits: %s" % (policy.limits));
     ctr = 1
     print("policy.rules:")
     for rule in policy.rules:
