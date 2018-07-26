@@ -33,12 +33,12 @@ try:
         pprint(image)
 except ApiException as e:
     print("Exception when calling ImageApi->get_image: %s" % e)
-    sys.exit()
+    sys.exit(1)
 
 try:
     image_api.instrument_image(image.id)
 except ApiException as e:
     print("Exception when calling ImageApi->instrument_image: %s" % e)
-    sys.exit()
+    sys.exit(2)
 
 print("%s instrumentation request submitted." % image.id)

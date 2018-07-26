@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# compatibility wrapper for bash scripts if only the ash shell is available
+#
+# caveat: does not handle quotes in args
+
+test -x /bin/bash && exec "${@}"
+
+# pop first arg, then source the script
+target="$1"
+shift
+#set -x
+exec /bin/ash -c "set -- $@ && . $target"
