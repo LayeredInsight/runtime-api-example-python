@@ -41,7 +41,7 @@ php_rule = layint_runtime_api.PolicyRule()
 php_rule.name = "No execing shell"
 php_rule.rule_type = "syscall"
 php_rule.program = "/usr/sbin/httpd"
-php_rule.syscall = 59
+php_rule.syscall = "sys_execve"
 php_rule.arg1 = "/bin/sh"
 php_rule.action = "deny"
 policy.rules.append(php_rule)

@@ -57,6 +57,7 @@ if args.verbose:
         actionInt = 0
         if rule.action == "allow":
             actionInt = 1
+        # TODO convert rule.syscall from syscall name string to syscall number (requires specifying arch)
         #if rule.rule_type.lower() == "listener" or rule.rule_type.lower() == "execution":
         #rule_name = "rule #%d" % (ctr)
         rule_name=""

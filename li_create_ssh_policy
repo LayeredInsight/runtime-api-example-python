@@ -29,7 +29,7 @@ policy = layint_runtime_api.Policy()
 if args.name:
     policy.name = args.name
 else:
-    policy.name = "Prevent sshd"
+    policy.name = "Prevent sshd with sys_bind"
 policy.description = "Blocks sshd from binding to port 22"
 policy.default_file_action = "allow"
 policy.default_network_action = "allow"
@@ -43,6 +43,7 @@ ssh_rule.rule_type = "listener"
 ssh_rule.program = "/usr/sbin/sshd"
 ssh_rule.listening_port = 22
 ssh_rule.action = "deny"
+ssh_rule.syscall = "sys_bind"
 policy.rules.append(ssh_rule)
 
 # Create new Policy definition

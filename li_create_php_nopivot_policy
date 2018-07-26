@@ -43,7 +43,7 @@ pivot_rule.rule_type = "network"
 pivot_rule.program = "/usr/bin/curl"
 pivot_rule.listening_addr = "*"
 pivot_rule.listening_port = 80
-pivot_rule.syscall = 42
+pivot_rule.syscall = "sys_connect"
 pivot_rule.action = "deny"
 policy.rules.append(pivot_rule)
 
