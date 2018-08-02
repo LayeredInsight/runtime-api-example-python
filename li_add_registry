@@ -20,6 +20,9 @@ parser.add_argument("--url", help="URL of registry to add", required=True)
 parser.add_argument("--type", help="Type of registry to add", choices=["dtr","ecr","docker.io","private"], default="dtr")
 parser.add_argument("--username", help="Username to authenticate private registry")
 parser.add_argument("--password", help="Password to authenticate private registry")
+parser.add_argument("--certificate", help="Base64 encoded registry certificate", default="")
+parser.add_argument("--tls-verify", action='store_true', help="Enables server certificate verification", default=False)
+parser.add_argument("--insecure-registry", action='store_true', help="Allows HTTP protocol requests when set insecure", default=False)
 args = parser.parse_args()
 
 env_setup()
@@ -35,9 +38,13 @@ registry.url = args.url
 registry.type = args.type
 registry.username = args.username
 registry.password = args.password
+registry.certificate = args.certificate
+registry.tls_verify = args.tls_verify
+registry.insecure_registry = args.insecure_registry
 
 if registry.url.startswith("http://") or registry.url.startswith("https://"):
-    print("ERROR: URL should not start with http:// or https://")
+    print("ERROR: URL should not start with http:// or https://.")
+    print("Use --insecure-registry to allow for insecure HTTP requests")
     print("Current value for URL: " + registry.url)
     sys.exit()
 
