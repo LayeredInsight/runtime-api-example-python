@@ -27,7 +27,8 @@ parser.add_argument("--rules-csv-names", help="Name selection for imported cvs r
 parser.add_argument("--type", help="rule type", choices=["file", "write", "execution", "listener", "network", "syscall", "syscallgroup", "java"], default="file")
 parser.add_argument("--program", help="Program to match for rule, absolute path highly recommended.", default="*")
 parser.add_argument("--action", help="Action for the rule", choices=["allow", "deny"], default="allow")
-parser.add_argument("--syscall", help="Syscall to match for the rule", type=int, default=0)
+# TBD to support syscall number vs name: we would need a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go 
+parser.add_argument("--syscall", help="Syscall to match for the rule", type=str, default="")
 parser.add_argument("--arg1", help="Argument1 to match for the rule", default="")
 parser.add_argument("--arg2", help="Argument2 to match for the rule", default="")
 parser.add_argument("--arg3", help="Argument3 to match for the rule", default="")
@@ -122,8 +123,7 @@ elif args.name is None:
 else:
   rule = layint_runtime_api.PolicyRule()
   rule.name = args.name
-  # TODO we need to export a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go
-  #  and set rule_type automatically to avoid bugs or unexpected behavior
+  # TBD - set rule_type automatically to avoid bugs or unexpected behavior
   rule.rule_type = args.type
   rule.syscall = args.syscall
   rule.program = args.program
@@ -151,7 +151,7 @@ else:
 
 # Create new Policy definition
 if args.verbose:
-    print("Creating Policy %s on API host %s..." % (args.policy_name, v.get("api_host")))
+    print("Updating Policy %s on API host %s..." % (args.policy_name, v.get("api_host")))
 
 try:
     api_response = policy_api.update_policy(policy.id, policy=policy)
