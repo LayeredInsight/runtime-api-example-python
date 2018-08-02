@@ -1,7 +1,7 @@
 #!/bin/bash
 # if only 'ash' available, execute with: li li_instrument ...
 #
-# example script to LI instrument an existing or new registry image
+# example script to add an image to LI: scans and instruments an existing or new registry image
 #
 # @arg1 imageName
 # @arg2 optional: LI registry_name to push instrumented image (if not the pull registry)
