@@ -17,7 +17,7 @@ from li_utils.envtools import env_setup
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
 parser.add_argument("--containerid", help="ID of container to build behavioral policy from", required=True)
-parser.add_argument("--merge-policyid", help="ID of policy to merge built behavioral rules into", required=False, default=None)
+parser.add_argument("--merge-policyid", help="ID of policy to merge built behavioral rules into", required=False, default="")
 parser.add_argument("--log-action", help="types of logs with matching actions to generate rules", required=False, default="all")
 args = parser.parse_args()
 
