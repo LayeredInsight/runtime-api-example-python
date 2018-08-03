@@ -18,6 +18,10 @@
 # @depends the image's registry must already be added via: li_add_registry
 # @depends the image's push registry must already be added via: li_add_registry
 # @warning does not support a image url, or li_registry with http:// or https:// scheme
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
 
 set -e
 
