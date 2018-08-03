@@ -16,6 +16,7 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Config name to match", required=False)
 args = parser.parse_args()
 
 env_setup()
@@ -35,4 +36,6 @@ except ApiException as e:
     sys.exit()
 
 for config in configs:
-    print(" %s - %s" % (config['Id'], config['Name']))
+    configName=config['Name']
+    if args.name is None or args.name == configName:
+        print(" %s - %s" % (config['Id'], config['Name']))
