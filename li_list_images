@@ -38,4 +38,4 @@ except ApiException as e:
 
 for image in images:
     if args.name is None or args.name == image['Name']:
-        print(" %s - %s - %s" % (image['Id'], image['Name'], image['StatusMsg']))
+        print(" %s - %s - %s" % (image['ID'], image['Name'], image['StatusMsg']))
