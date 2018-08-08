@@ -16,6 +16,7 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name of policy to match", required=False)
 args = parser.parse_args()
 
 env_setup()
@@ -35,4 +36,7 @@ except ApiException as e:
     sys.exit()
 
 for policy in policies:
-    print(" %s - %s - %s" % (policy['Id'], policy['Name'], policy['Description']))
+    # optionally match policy name 
+    policyName=policy['Name']
+    if args.name is None or args.name == policyName:
+        print(" %s - %s - %s" % (policy['Id'], policy['Name'], policy['Description']))
