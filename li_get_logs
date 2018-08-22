@@ -16,15 +16,14 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("-q", "--quiet", help="Only print results", action="store_true")
 parser.add_argument("--containerid", help="ID of container to get logs for", required=True)
-parser.add_argument("--numlogs", help="Maximum number of logs to get")
+parser.add_argument("--numlogs", help="Maximum number of logs to get. Use 0 for all logs", default=100)
 args = parser.parse_args()
 
 env_setup()
 
-page_size = 100
-if args.numlogs:
-    page_size = args.numlogs
+page_size = args.numlogs
 
 layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
 # layint_runtime_api.configuration.debug = True
@@ -45,8 +44,9 @@ if args.verbose:
     print(" PageSize: %s" % (container_logs.page_size))
     print(" URI: %s" % (container_logs.uri))
     print(" Total log count: %s" % (container_logs.total_log_count))
-
-pprint(container_logs.log_data[0])
+    pprint(container_logs.log_data[0])
+elif not args.quiet:
+    print("%s of %s logs received" % (len(container_logs.log_data), container_logs.total_log_count))
 
 for log in container_logs.log_data:
    print(" %s,%s,%s,%s,%s,%s,%s" % (log.id, log.process_id, log.process_name, log.system_call, log.system_call_name, log.action, log.file_name))
