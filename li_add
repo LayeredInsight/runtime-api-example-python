@@ -42,14 +42,23 @@ else
   liregistry_name=`echo $liregistry_name`
 fi
 
-if [[ "$2" != "" ]]; then
-  opt+=(--push-registry)
-  opt+=("$2")
+push_registry="$2"
+#if [[ "$2" != "" ]]; then
+#  opt+=(--push-registry)
+#  opt+=("$2")
+#fi
+push_name="$3"
+#if [[ "$3" != "" ]]; then
+#  opt+=(--push-name)
+#  opt+=("$3")
+#fi
+if [[ "$push_registry" != "" ]]; then
+  set -- --push-registry "$push_registry"
 fi
-if [[ "$3" != "" ]]; then
-  opt+=(--push-name)
-  opt+=("$3")
+if [[ "$push_name" != "" ]]; then
+  set -- "$@" --push-name "$push_name"
 fi
+
 
 if [[ "$image_decription" == "" ]]; then
   image_decription="$image_name $timestamp"
@@ -61,14 +70,12 @@ imageid=`echo $out | awk '{print $1}'`
 
 # backend should assign default config if not specified
 if [[ "$config_name" != "" ]]; then
-  opt+=(--config)
-  opt+=("$config_name")
+  set -- "$@" --config "$config_name"
 fi
 # backend should assign default company.PolicyID if not specified
 #  TODO pull and check company.PolicyID if not specified
 if [[ "$policy_name" != "" ]]; then
-  opt+=(--policy)
-  opt+=("$policy_name")
+  set -- "$@" --policy "$policy_name"
 fi
 
 # add image if it did not previously exist
@@ -78,7 +85,7 @@ if [[ "$imageid" == "" ]]; then
 	--name "$image_name" \
 	--description "$image_decription" \
 	--registry "$liregistry_name" \
-	"${opt[@]}"`
+	"${@}"`
 fi
 set -x
 

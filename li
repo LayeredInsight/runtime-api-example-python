@@ -10,4 +10,4 @@ test -x /bin/bash && exec "${@}"
 target="$1"
 shift
 #set -x
-exec /bin/ash -c "set -- $@ && . $target"
+/bin/ash -c set -- $@ && . ${target}
