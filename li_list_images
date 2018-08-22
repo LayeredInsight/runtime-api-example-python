@@ -33,7 +33,8 @@ try:
     if args.verbose:
         pprint(images)
 except ApiException as e:
-    print("Exception when calling ImageApi->get_images: %s" % e)
+    print("Exception when calling ImageApi->get_images: %s" % e, file=sys.stderr)
+    # TODO use non-zero exit after 404 for empty images fix
     sys.exit()
 
 for image in images:

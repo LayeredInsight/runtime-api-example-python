@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+from pprint import pprint
+import layint_runtime_api
+from layint_runtime_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--configid", help="ID of configuration to apply to image", required=True)
+parser.add_argument("--imageid", help="ID of image to update", required=True)
+args = parser.parse_args()
+
+env_setup()
+
+layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
+
+config_api = layint_runtime_api.ConfigurationApi()
+config_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Looking up config %s on API host %s..." % (args.configid, v.get("api_host")))
+try:
+    config = config_api.get_config(args.configid)
+except ApiException as e:
+    print("Exception when calling ConfigurationApi->get_config: %s\n" % e)
+    sys.exit()
+
+
+image_api = layint_runtime_api.ImageApi()
+image_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Looking up image %s on API host %s..." % (args.imageid, v.get("api_host")))
+try:
+    image = image_api.get_image(args.imageid)
+except ApiException as e:
+    print("Exception when calling ImageApi->get_image: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Got image image:")
+    pprint(image)
+
+image.config_id = config.id
+
+# Update image
+if args.verbose:
+    print("Updating Image on API host %s..." % (v.get("api_host")))
+    pprint(image)
+try:
+    api_response = image_api.update_image(image.id, image=image)
+except ApiException as e:
+    print("Exception when calling ImageApi->update_image: %s\n" % e)
+    sys.exit()
+
+if args.verbose:
+    print("Image updated, ID " + str(image.id))
