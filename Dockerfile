@@ -11,7 +11,6 @@ COPY * /layint/
 COPY li_utils/* /layint/li_utils/
 RUN apk update && \
     apk add gcc musl-dev && \
-    pip install layint-runtime-api && \
     pip install -r /layint/requirements.txt
 
 ### Set environment variables for your installation
