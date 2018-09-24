@@ -29,7 +29,7 @@ policy = layint_runtime_api.Policy()
 if args.name:
     policy.name = args.name
 else:
-    policy.name = "Default policy"
+    policy.name = "Default Policy"
 policy.description = "Default policy blocks nothing."
 policy.default_file_action = "allow"
 policy.default_network_action = "allow"
