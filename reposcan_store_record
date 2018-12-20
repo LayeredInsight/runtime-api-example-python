@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# script to impl. reposcan -store-record: adds and instruments detected registry images from reposcan
+#
+# @depends: LI runtime api 873a9lirt, runtime-python scripts, li_list_registries with ID output, li_add_image without required configid/policyid, docker, api:/reposcan, grep, awk
+
+if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: ./reposcan-store-record.sh registry-id [ -namesapce organization ]"
+  echo "Usage Example: ./reposcan-store-record.sh 5c12ef6f437fb30001bad4e6 -namespace my-org"
+  exit 1
+fi
+
+registryid=$1
+# pass -namespace or other arguments
+shift
+
+# check LI_API_HOST KEY
+if [ "$LI_API_HOST" = "" ]; then
+  echo "Error, LI_API_HOST and LI_API_KEY must be set" >&2
+  exit 1
+fi
+
+# only attempt to support current production runtime api server
+echo "checking runtime api server release tag:"
+docker ps | grep -q '873a9lirt_api/lirt_ap'
+if [ $? -ne 0 ]; then
+  echo "Error, $0 only supports LI runtime api server: 873a9lirt_api" >&2
+  exit 1
+fi
+
+# production swagger does not support instrument_image
+LI_ADD_IMAGE=/opt/layint/runtime-python/li_add_image
+
+# some LI runtime AMIs install layint_runtime_api python package without virtualenv
+# activate if venv exists
+if [ "$VIRTUAL_ENV" = "" ] && [ -f /opt/layint/runtime-python/venv/bin/activate ]; then
+  . /opt/layint/runtime-python/venv/bin/activate
+fi
+
+
+# li_add_image in production scripts only supports lookup by name
+LI_LIST_REGISTRIES=/opt/layint/runtime-python/li_list_registries
+
+# li_list_registries needs to print ID in first column and Name
+registry=`$LI_LIST_REGISTRIES | grep $registryid | awk '{print $3}'`
+if [ "$registry" = "" ]; then
+  echo "Error, unagle to lookup registry name for id: $registryid" >&2
+  exit 1
+fi
+
+LI_INSTRUMENT_IMAGE=/opt/layint/runtime-python/li_instrument_image
+REPOSCAN="docker exec -it api /reposcan -listuninstrumented  -show-image-list -registry-id ${registryid}"
+eval $REPOSCAN $@ | grep INSTRUMENTED -A 999 | tail -n +2 > /tmp/reposcan-store-record.tmp
+description="reposcan added `date '+%Y%m%d %H:%M:%S'`"
+
+while read image img_instr img_tracked img_digest; do
+  image=${image%$'\r'}
+  if [ "$image" = "" ]; then
+    continue
+  fi
+  if [ "$img_instr" = "true" ]; then
+    echo "Skipping instr.  image: $image"
+    continue
+  fi
+  if [ "$img_tracked" = "true" ]; then
+    echo "Skipping tracked image: $image"
+    continue
+  fi
+  # additional options: --config 'sshd_syscall_config' --policy "Default Policy"
+  # Note: if configid left empty, then the default config will be cloned per image (ideal for simple use cases)
+  # TBD: lookup default  configid where Default: True, policyid
+  set -x
+  imageid=`$LI_ADD_IMAGE --name "$image" --description "$description" --registry "$registry"`
+  set +x
+  if [ $? -eq 0 ]; then
+    $LI_INSTRUMENT_IMAGE --imageid $imageid
+  else
+    echo "Error, unable to initiate instrumentation after adding image: $image" >&2
+  fi
+done < /tmp/reposcan-store-record.tmp
+rm /tmp/reposcan-store-record.tmp
