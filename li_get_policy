@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 import argparse
+import json
 import sys
 import layint_runtime_api
 from pprint import pprint
@@ -32,16 +33,25 @@ try:
     policy = policy_api.get_policy(args.policyid)
 except ApiException as e:
     print("Exception when calling PolicyAPI->get_policy: %s\n" % e)
-    sys.exit()
+    sys.exit(1)
+
+
+def remove_prefix_str(t, prefix):
+    if t.startswith(prefix):
+        return t[len(prefix):]
+    return t
+
+def remove_prefix(o):
+    for k in o.keys():
+        nkey = remove_prefix_str(k,"_")
+        if nkey != k:
+            o[nkey] = o[k]
+            del o[k]
+    return o
+
+
 
 if args.verbose:
-    print("policy detail:")
-    print(" Name: %s" % (policy.name))
-    print(" ID: %s" % (policy.id))
-    print(" Description: %s" % (policy.description))
-    print(" User ID: %s" % (policy.user_id))
-    print(" Group ID: %s" % (policy.group_id))
-    print(" Schema Version: %s" % (policy.schema_version))
-    # pprint(policy)
-
-print(" %s - %s - %s" % (policy.id, policy.name, policy.description))
+    print(json.dumps(json.loads(json.dumps(policy, default=lambda o: o.__dict__, indent=2), object_hook=remove_prefix)))
+else:
+    print(" %s - %s - %s" % (policy.id, policy.name, policy.description))

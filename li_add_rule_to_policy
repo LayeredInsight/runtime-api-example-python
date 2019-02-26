@@ -13,6 +13,7 @@ from layint_runtime_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 import csv
+import json
 
 # Parse CLI
 parser = argparse.ArgumentParser()
@@ -22,6 +23,7 @@ parser.add_argument("--policy-name", help="Name of policy to add rule to", requi
 parser.add_argument("--description", help="Description for rule")
 parser.add_argument("--name", help="Name label for rule", default=None)
 parser.add_argument("--rules-csv", help="Policy rules only csv file to add to rules, rule_type will be set to syscall.", default=None)
+parser.add_argument("--rules-json", help="Policy rules only json file to add to rules.", default=None)
 parser.add_argument("--rules-csv-fixed-name", help="Single name to use for all imported cvs rules.", default=None)
 parser.add_argument("--rules-csv-names", help="Name selection for imported cvs rules.", choices=["original", "auto"], default="original")
 parser.add_argument("--type", help="rule type", choices=["file", "write", "execution", "listener", "network", "syscall", "syscallgroup", "java"], default="file")
@@ -79,7 +81,15 @@ if policy.group_id is None:
 
 numb_fields=7
 ctr=0
-if args.rules_csv is not None:
+if args.rules_json is not None:
+  with open(args.rules_json, 'r') as pFile:
+    policy_rules = pFile.read()
+    decodedRules = json.loads(policy_rules)
+    for dRule in decodedRules:
+      pRule = layint_runtime_api.PolicyRule(**dRule)
+      policy.rules.append(pRule)
+  #print(json.dumps(policy, default=lambda o: o.__dict__, indent=2))
+elif args.rules_csv is not None:
   with open(args.rules_csv, 'rb') as f:
     reader = csv.reader(f)
     for row in reader:
