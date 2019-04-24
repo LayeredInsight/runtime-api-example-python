@@ -59,7 +59,7 @@ except ApiException as e:
 
 config = None
 if args.config is not None or args.configid is not None:
-    config_api = layint_api.ConfigurationApi()
+    config_api = layint_runtime_api.ConfigurationApi()
 
     try:
         if args.configid is not None:
@@ -80,7 +80,7 @@ if args.config is not None or args.configid is not None:
 
 policy = None
 if args.policy is not None or args.policyid is not None:
-    policy_api = layint_api.PolicyApi()
+    policy_api = layint_runtime_api.PolicyApi()
 
     try:
         if args.policyid is not None:
