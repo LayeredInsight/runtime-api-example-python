@@ -19,6 +19,8 @@ virtualenv venv
 ```
 Now any libraries you install with pip will be local to this environment, accessible only after sourcing `venv/bin/activate`
 
+*Note:* Mac users can install pip by following https://pip.readthedocs.io/en/stable/installing/
+
 ### Install the Runtime Python API library and dependencies
 From this source directory, run
 
