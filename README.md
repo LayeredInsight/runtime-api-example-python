@@ -29,7 +29,7 @@ pip install -r requirements.txt
 ### Set environment variables for your installation
 ```
 export LI_API_KEY=ApiKey:demo:setanapikey
-export LI_API_HOST=http://localhost/v0.01
+export LI_API_HOST=http://localhost/v1
 ```
 
 ## Finally, run the scripts

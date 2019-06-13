@@ -15,6 +15,6 @@ RUN apk update && \
 
 ### Set environment variables for your installation
 ENV LI_API_KEY ApiKey:username:setanapikey
-ENV LI_API_HOST http://localhost/v0.01
+ENV LI_API_HOST http://localhost/v1
 
 ENTRYPOINT /bin/sh

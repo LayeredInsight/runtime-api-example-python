@@ -6,7 +6,7 @@ from __future__ import print_function
 import sys
 from vyper import v
 
-API_VERSION_PATH="/v0.01"
+API_VERSION_PATH="/v1"
 
 # Config setup
 def env_setup():
